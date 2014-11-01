@@ -1,4 +1,4 @@
-hostname: sichevskyi-uawebchallenge-2014.local
+hostname: sichevskyi-uawebchallenge-semifinal-2014.local
 is_production: false
 
 php_error_reporting: E_ALL
@@ -9,7 +9,7 @@ php_post_max_size: 25M
 apache_run_user: www-data
 apache_run_group: www-data
 apache_server_name: localhost
-default_apache_document_root: /var/www/sichevskyi-uawebchallenge-2014/apps/balancer
+default_apache_document_root: /var/www/sichevskyi-uawebchallenge-semifinal-2014/apps/recruiting
 
 path_to_ssl_certs: '/etc/apache2/ssl/certs/'
 
@@ -18,7 +18,7 @@ ssl_certs_locations: []
 ssl_apache_vhosts: []
 
 apache_vhosts: [
-    {name: 'balancer.192.168.42.20.xip.io', rootFolder: '/var/www/sichevskyi-uawebchallenge-2014/apps/balancer', email: 'admin@localhost'}
+    {name: 'recruiting.192.168.42.20.xip.io', rootFolder: '/var/www/sichevskyi-uawebchallenge-semifinal-2014/apps/recruiting', email: 'admin@localhost'}
 ]
 
 phpmyadmin_name: db.192.168.42.20.xip.io
@@ -28,11 +28,11 @@ phpmyadmin_email: admin@localhost
 mysql_bind_address: 127.0.0.1
 mysql_root_pass: ljkJH86KJ
 
-mysql_app_user: balancer
+mysql_app_user: recruiting
 mysql_app_pass: JHjkh67KJH6KLJHN
 
 mysql_databases: [
-  uwc_balancer,
+  uwc_recruiting,
 ]
 
 migrate_db: true

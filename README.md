@@ -28,18 +28,18 @@ sudo apt-get install nfs-kernel-server nfs-common portmap
 ## Run vagrant
 
 ```
-cd /var/www/sichevskyi-uawebchallenge-2014/
+cd /var/www/sichevskyi-uawebchallenge-semifinal-2014/
 vagrant up
 ```
 
 ## Now you should be able to use resources
 
-- http://balancer.192.168.42.20.xip.io
+- http://recruiting.192.168.42.20.xip.io
 - http://db.192.168.42.20.xip.io
 
 ## How to connect to virtual machine via ssh
 
 ```
-cd /var/www/sichevskyi-uawebchallenge-2014/
+cd /var/www/sichevskyi-uawebchallenge-semifinal-2014/
 vagrant ssh
 ```
