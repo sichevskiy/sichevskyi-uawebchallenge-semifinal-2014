@@ -5,13 +5,15 @@ class RecruitingForm extends CFormModel
 {
     public $firstName;
     public $lastName;
+    public $email;
     public $phone;
     public $username;
 
     public function rules()
     {
         return array(
-            array('firstName, lastName, phone, username', 'safe'),
+            array('username', 'required'),
+            array('firstName, lastName, email, phone, ', 'safe'),
         );
     }
 
@@ -20,6 +22,8 @@ class RecruitingForm extends CFormModel
      */
     public function attributeLabels()
     {
-        return array();
+        return array(
+            'download' => 'Export to CSV',
+        );
     }
 } 

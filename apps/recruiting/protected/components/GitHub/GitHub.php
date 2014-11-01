@@ -22,8 +22,16 @@ class GitHub extends BaseAppComponent
         parent::init();
     }
 
-    public function get()
+    public function getInfo($user)
     {
+        try {
+            return $this->api->users->getSingleUser($user);
+        } catch (Exception $e) {
+        }
+    }
 
+    public function getRepositories($user)
+    {
+        return $this->api->repos->listUserRepositories($user);
     }
 } 

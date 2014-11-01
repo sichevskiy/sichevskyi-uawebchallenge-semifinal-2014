@@ -20,8 +20,8 @@ return array(
         'application.models.*',
         'application.components.*',
         'application.components.base.*',
-        'application.extensions.linkedin.*',
         'application.extensions.github.*',
+        'application.extensions.jqBarGraph.*',
         'application.components.cache.*',
     ),
 
@@ -91,10 +91,6 @@ return array(
             'class' => 'bootstrap.components.Bootstrap',
         ),
 
-        'linkedIn' => array(
-            'class' => 'application.components.LinkedIn.LinkedIn',
-        ),
-
         'gitHub' => array(
             'class' => 'application.components.GitHub.GitHub',
         ),
@@ -107,13 +103,6 @@ return array(
     'params' => array(
         // this is used in contact page
         'adminEmail' => 'webmaster@example.com',
-        'linkedIn' => array(
-            'apiKey' => '75k25mwkmek7pa',
-            'apiSecret' => '73Yx3C06CR0M1Umh',
-            'oauthToken' => 'c3e06b7b-696a-4548-ab19-c6a65d2c27d3',
-            'oauthSecret' => '159fc79c-70d7-482e-a23a-deca8b005b0c',
-            'callbackUrl' => 'http://localhost/index.php?r=site/linkedInCallback',
-        ),
         'gitHub' => array(
             'username' => 'sichevskiy',
             'password' => 'quiver13',
