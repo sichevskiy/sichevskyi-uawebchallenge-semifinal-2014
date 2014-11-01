@@ -2,7 +2,8 @@
 
 /**
  * @property Bootstrap $bootstrap
- * @property Wargaming $wargaming
+ * @property Linkedin $linkedIn
+ * @property GitHub $gitHub
  * @property Redis $redisCache
  */
 class CApplication

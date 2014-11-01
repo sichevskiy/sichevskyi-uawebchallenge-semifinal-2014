@@ -8,7 +8,7 @@ Yii::setPathOfAlias('bootstrap', dirname(__FILE__) . '/../extensions/bootstrap')
 // CWebApplication properties can be configured here.
 return array(
     'basePath' => dirname(__FILE__) . DIRECTORY_SEPARATOR . '..',
-    'name' => 'recruiting for WoT',
+    'name' => 'Recruiting for UWC2014 Semifinal',
 
     'theme' => 'bootstrap', // requires you to copy the theme under your themes directory
 
@@ -20,7 +20,8 @@ return array(
         'application.models.*',
         'application.components.*',
         'application.components.base.*',
-        'application.extensions.wgapi.*',
+        'application.extensions.linkedin.*',
+        'application.extensions.github.*',
         'application.components.cache.*',
     ),
 
@@ -90,9 +91,12 @@ return array(
             'class' => 'bootstrap.components.Bootstrap',
         ),
 
-        'wargaming' => array(
-            'class' => 'application.components.Wargaming.Wargaming',
-            'cacheClass' => 'WargamingCache',
+        'linkedIn' => array(
+            'class' => 'application.components.LinkedIn.LinkedIn',
+        ),
+
+        'gitHub' => array(
+            'class' => 'application.components.GitHub.GitHub',
         ),
 
         'redisCache' => require(dirname(__FILE__) . '/redisCache.php'),
@@ -103,6 +107,17 @@ return array(
     'params' => array(
         // this is used in contact page
         'adminEmail' => 'webmaster@example.com',
-        'wargamingApplicationId' => 'f1bc326d684b91ff8f3a7362778bcb40',
+        'linkedIn' => array(
+            'apiKey' => '75k25mwkmek7pa',
+            'apiSecret' => '73Yx3C06CR0M1Umh',
+            'oauthToken' => 'c3e06b7b-696a-4548-ab19-c6a65d2c27d3',
+            'oauthSecret' => '159fc79c-70d7-482e-a23a-deca8b005b0c',
+            'callbackUrl' => 'http://localhost/index.php?r=site/linkedInCallback',
+        ),
+        'gitHub' => array(
+            'username' => 'sichevskiy',
+            'password' => 'quiver13',
+        ),
+
     ),
 );

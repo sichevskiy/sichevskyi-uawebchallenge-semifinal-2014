@@ -1,6 +1,10 @@
 <?php
 /* @var $this SiteController */
 
+/* @var $form TbActiveForm
+ *
+ */
+
 $this->pageTitle = Yii::app()->name;
 
 ?>
@@ -20,14 +24,24 @@ $this->pageTitle = Yii::app()->name;
 
     <p class="note">Fields with <span class="required">*</span> are required.</p>
 
-    <div class="row">
-        <?php echo $form->dropDownListRow($model, 'clan1', array(null => null) + $list); ?>
+    <div>
+        LinkedIn
+    </div>
+    <div class="row well">
+        <?php echo $form->textFieldRow($model, 'firstName'); ?>
+        <?php echo $form->textFieldRow($model, 'lastName'); ?>
+        <?php echo $form->textFieldRow($model, 'phone'); ?>
+    </div>
 
-        <?php echo $form->dropDownListRow($model, 'clan2', array(null => null) + $list); ?>
+    <div>
+        GitHub
+    </div>
+    <div class="row well">
+        <?php echo $form->textFieldRow($model, 'username'); ?>
     </div>
 
     <div class="row buttons">
-        <?php echo CHtml::submitButton('Balance', array('class' => 'btn btn-primary')); ?>
+        <?php echo CHtml::submitButton('Search', array('class' => 'btn btn-primary')); ?>
     </div>
 
     <img id="loading" style="display: none" src="/images/loading.gif">
@@ -36,16 +50,3 @@ $this->pageTitle = Yii::app()->name;
     <?php $this->endWidget(); ?>
 
 </div><!-- form -->
-
-
-<script>
-    $('#BalanceForm_clan1').change(function (event) {
-        $("#BalanceForm_clan2 option").removeAttr('disabled');
-        $("#BalanceForm_clan2 option[value=" + $(this).val() + "]").attr('disabled', 'disabled')
-    });
-
-    $('#BalanceForm_clan2').change(function (event) {
-        $("#BalanceForm_clan1 option").removeAttr('disabled');
-        $("#BalanceForm_clan1 option[value=" + $(this).val() + "]").attr('disabled', 'disabled')
-    });
-</script>

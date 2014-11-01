@@ -29,56 +29,52 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        $model = new BalanceForm();
+        if (!isset(Yii::app()->session['linkedInToken'])) {
+            $this->redirect(Yii::app()->createUrl('site/linkedInLogin'));
+        }
+
+        $model = new RecruitingForm();
 
         // if it is ajax validation request
-        if (isset($_POST['BalanceForm'])) {
-            $model->attributes = $_POST['BalanceForm'];
+        if (isset($_POST['RecruitingForm'])) {
+            $model->attributes = $_POST['RecruitingForm'];
             if ($model->validate()) {
-                $this->redirect(Yii::app()->createUrl('site/balance', array(
-                    'clan1Id' => $model->clan1,
-                    'clan2Id' => $model->clan2,
-                )));
+                echo 1;
             }
         }
 
-        $clans = Yii::app()->wargaming->globalwarTop();
+//        $s = Yii::app()->linkedIn->peopleSearch('123');
+//
+        $owner = 'tan-tan-kanarek';
+        $repo = 'github-php-client';
+        $client = Yii::app()->gitHub->api;
+        $client->setPage();
+        $client->setPageSize(2);
+        //$info = $client->users->getSingleUser($owner);
 
-        $list = array();
-        foreach ($clans as $clan) {
-            $list[$clan['clan_id']] = $clan['name'];
-        }
+        $commits = $client->repos->listUserRepositories($owner);
+
+        echo CVarDumper::dumpAsString($commits, 10, 1);
 
         $this->render('index', array(
             'model' => $model,
-            'list' => $list,
         ));
     }
 
-    public function actionBalance()
+    public function actionLinkedInLogin()
     {
-        $clan1Id = Yii::app()->request->getQuery('clan1Id');
-        $clan2Id = Yii::app()->request->getQuery('clan2Id');
+        $url = Yii::app()->linkedIn->getLoginUrl();
 
-        $clan1Info = Yii::app()->wargaming->clanInfo($clan1Id);
-        $clan2Info = Yii::app()->wargaming->clanInfo($clan2Id);
-
-        $clan1 = $this->getBestTanksByClanId($clan1Info, $clan1Id);
-        $clan2 = $this->getBestTanksByClanId($clan2Info, $clan2Id);
-
-        // renders the view file 'protected/views/site/index.php'
-        // using the default layout 'protected/views/layouts/main.php'
-
-        $this->render('result', array(
-            'clan1Name' => $clan1Info[$clan1Id]['name'],
-            'clan2Name' => $clan2Info[$clan2Id]['name'],
-            'clan1DataProvider' => new CArrayDataProvider($clan1, array(
-                'pagination' => array('pageSize' => 15),
-            )),
-            'clan2DataProvider' => new CArrayDataProvider($clan2, array(
-                'pagination' => array('pageSize' => 15),
-            )),
+        $this->render('linkedInLogin', array(
+            'url' => $url,
         ));
+    }
+
+    public function actionLinkedInCallback()
+    {
+        Yii::app()->linkedIn->getAccessToken($_GET['code']);
+
+        $this->redirect(Yii::app()->createUrl('site/index'));
     }
 
     /**
@@ -153,85 +149,4 @@ class SiteController extends Controller
         $this->redirect(Yii::app()->homeUrl);
     }
 
-    protected function getBestTankByAccount($account)
-    {
-        $accountId = $account['account_id'];
-
-        $availableLevels = array(4, 5, 6);
-
-        $tanks = Yii::app()->wargaming->tanks();
-
-        $tankStat = Yii::app()->wargaming->tanksStats($accountId);
-
-        $arr = array();
-        foreach ($tankStat[$accountId] as $stats) {
-            if (in_array($tanks[$stats['tank_id']]['level'], $availableLevels)) {
-                $tankInfo = Yii::app()->wargaming->tankinfo($stats['tank_id']);
-
-                $points = ($tankInfo[$stats['tank_id']]['gun_damage_min'] + $tankInfo[$stats['tank_id']]['gun_damage_max']) / 2 * $tankInfo[$stats['tank_id']]['max_health'];
-
-                $arr[$stats['tank_id']] = array(
-                    'id' => $stats['tank_id'],
-                    'accountName' => $account['account_name'],
-                    'mom' => $stats['mark_of_mastery'],
-                    'dmgMin' => $tankInfo[$stats['tank_id']]['gun_damage_min'],
-                    'dmgMax' => $tankInfo[$stats['tank_id']]['gun_damage_max'],
-                    'hp' => $tankInfo[$stats['tank_id']]['max_health'],
-                    'points' => $points,
-                    'name' => $tankInfo[$stats['tank_id']]['name_i18n'],
-                    'level' => $tanks[$stats['tank_id']]['level'],
-                );
-            }
-        }
-
-        if ($arr) {
-            //double sort
-            usort($arr, function ($a, $b) {
-                if ($a['mom'] > $b['mom']) {
-                    return -1;
-                }
-                if ($a['mom'] < $b['mom']) {
-                    return 1;
-                }
-                if ($a['mom'] == $b['mom']) {
-                    if ($a['points'] == $b['points']) {
-                        return 0;
-                    }
-                    return ($a['points'] > $b['points']) ? -1 : 1;
-                }
-            });
-
-            return $arr[0];
-        }
-    }
-
-    protected function getBestTanksByClanId($clanInfo, $clanId)
-    {
-        $arr = array();
-        foreach ($clanInfo[$clanId]['members'] as $member) {
-            $arr[] = $this->getBestTankByAccount($member);
-        }
-
-        //double sort
-        usort($arr, function ($a, $b) {
-            if ($a['mom'] > $b['mom']) {
-                return -1;
-            }
-            if ($a['mom'] < $b['mom']) {
-                return 1;
-            }
-            if ($a['mom'] == $b['mom']) {
-                if ($a['points'] == $b['points']) {
-                    return 0;
-                }
-                return ($a['points'] > $b['points']) ? -1 : 1;
-            }
-        });
-
-        if (count($arr) > 15) {
-            return array_slice($arr, 0, 15);
-        } else {
-            return $arr;
-        }
-    }
 }
