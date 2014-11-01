@@ -1,0 +1,48 @@
+- set_fact: redis_installed=0
+- set_fact: installed_correct_redis_version=0
+
+- name: be sure required packages are installed
+  apt: pkg={{ item }} state=present
+  with_items:
+    - make
+    - gcc
+    - g++
+
+- name: determine current redis version
+  shell: redis-server -v | head -n 1 | awk -F ' ' '{print $3}' | awk -F '=' '{print $2}'
+  register: current_redis_version
+
+- set_fact: redis_installed=1
+  when: not current_redis_version.stderr
+
+- set_fact: installed_correct_redis_version=1
+  when: current_redis_version.stdout == redis_version
+
+- name: download Redis
+  shell: creates=/tmp/redis-{{ redis_version }}.tar.gz wget -O - http://download.redis.io/releases/redis-{{ redis_version }}.tar.gz | tar -xz -C /tmp
+  when: installed_correct_redis_version == '0'
+
+- name: install Redis
+  shell: cd /tmp/redis-{{ redis_version }} && make install
+  when: installed_correct_redis_version == '0'
+
+- name: create user redis
+  user: name=redis system=yes home=/var/lib/redis shell=/bin/false
+
+- name: create Redis pid file directory
+  shell: creates=/var/run/redis/ mkdir /var/run/redis/ -p && chown redis:redis /var/run/redis/
+
+- name: create Redis config directory
+  shell: creates=/etc/redis mkdir /etc/redis && chown redis:redis /etc/redis -Rf
+
+- name: create Redis logs directory
+  shell: creates=/var/log/redis/ mkdir /var/log/redis/ -p && chown redis:redis /var/log/redis/ -Rf
+
+- name: copy Redis config
+  template: src=redis.conf.j2 dest=/etc/redis/redis.conf owner=redis group=redis mode=0644
+
+- name: configure Upstart for Redis
+  template: src=upstart_redis.conf.j2 dest=/etc/init/redis.conf
+
+- name: be sure redis is running and enabled
+  service: name=redis state=restarted enabled=yes

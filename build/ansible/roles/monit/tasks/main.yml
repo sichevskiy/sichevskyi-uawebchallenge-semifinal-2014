@@ -1,0 +1,8 @@
+- name: ensure Monit is installed
+  apt: pkg=monit state=present
+
+- name: copy the Monit monitrc file
+  template: src=monitrc.j2 dest=/etc/monit/monitrc owner=root mode=0700
+
+- name: make sure the Monit started
+  service: name=monit state=restarted enabled=yes

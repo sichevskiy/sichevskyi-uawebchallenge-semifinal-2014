@@ -1,0 +1,15 @@
+- name: ensure Exim is installed
+  action: apt pkg={{ item }} state=present
+  with_items:
+      - exim4
+      - exim4-base
+      - exim4-config
+
+- name: copy the Exim update-exim4.conf
+  template: src=update-exim4.conf.conf.j2 dest=/etc/exim4/update-exim4.conf.conf owner=root mode=0644
+
+- name: update the Exim master config
+  command: update-exim4.conf
+
+- name: make sure the Exim started
+  service: name=exim4 state=restarted enabled=yes

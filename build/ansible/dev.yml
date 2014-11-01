@@ -1,0 +1,17 @@
+- hosts: dev
+  sudo: true
+  gather_facts: true
+  vars_files:
+    - "vars/dev.yml"
+  roles:
+    - initial
+    - common
+    - apache2
+    - php-ubuntu
+    - xdebug
+    - phpredis
+    - redis
+    - mysql
+    - phpmyadmin
+    - exim
+    - monit

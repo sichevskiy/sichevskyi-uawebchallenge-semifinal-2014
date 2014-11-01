@@ -1,0 +1,49 @@
+- name: download PhpRedis
+  shell: chdir=/tmp creates=/tmp/phpredis.zip wget https://github.com/nicolasff/phpredis/zipball/master -O phpredis.zip
+
+- name: compile PhpRedis
+  shell: chdir=/tmp creates=/tmp/nicolasff-phpredis/modules/redis.so unzip /tmp/phpredis.zip && mv /tmp/nicolasff-phpredis-* /tmp/nicolasff-phpredis && cd /tmp/nicolasff-phpredis && phpize && ./configure && make && make install
+
+- shell: ls /etc/php5/fpm/
+  register: php5_fpm_dir_exists
+  ignore_errors: yes
+
+- shell: ls /etc/php5/apache2/
+  register: php5_apache2_dir_exists
+  ignore_errors: yes
+
+- shell: ls /etc/php5/cli/
+  register: php5_cli_dir_exists
+  ignore_errors: yes
+
+- name: detect minor php version
+  shell: chdir=/tmp php -v | grep -Eow '^PHP [^ ]+'| awk '{ print $2 }'| awk -F '.' '{print $2}'
+  register: minor_php_version
+
+- name: install PhpRedis for php 5.5 and greater
+  shell: creates=/etc/php5/mods-available/redis.ini touch /etc/php5/mods-available/redis.ini && echo extension=redis.so > /etc/php5/mods-available/redis.ini
+  when: minor_php_version.stdout|int >= 5
+
+- name: install PhpRedis for php 5.5 and greater (Apache2)
+  shell: creates=/etc/php5/apache2/conf.d/redis.ini ln -s /etc/php5/mods-available/redis.ini /etc/php5/apache2/conf.d/
+  when: minor_php_version.stdout|int >= 5 and php5_apache2_dir_exists.rc == 0
+
+- name: install PhpRedis for php 5.5 and greater (PHP-FPM)
+  shell: creates=/etc/php5/fpm/conf.d/redis.ini ln -s /etc/php5/mods-available/redis.ini /etc/php5/fpm/conf.d/
+  when: minor_php_version.stdout|int >= 5 and php5_fpm_dir_exists.rc == 0
+
+- name: install PhpRedis for php 5.5 and greater (PHP CLI)
+  shell: creates=/etc/php5/cli/conf.d/redis.ini ln -s /etc/php5/mods-available/redis.ini /etc/php5/cli/conf.d/
+  when: minor_php_version.stdout|int >= 5 and php5_cli_dir_exists.rc == 0
+
+- name: install PhpRedis for php lower than 5.5 (5.3 - 5.4)
+  shell: creates=/etc/php5/conf.d/redis.ini touch /etc/php5/conf.d/redis.ini && echo extension=redis.so > /etc/php5/conf.d/redis.ini
+  when: minor_php_version.stdout|int < 5
+
+- name: restart apache
+  service: name=apache2 state=restarted
+  when: php5_apache2_dir_exists.rc == 0
+
+- name: restart nginx
+  service: name=php5-fpm state=restarted
+  when: php5_fpm_dir_exists.rc == 0

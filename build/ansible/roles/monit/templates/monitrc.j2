@@ -1,0 +1,95 @@
+###############################################################################
+## Monit control file
+###############################################################################
+###############################################################################
+## Global section
+###############################################################################
+## Start Monit in the background (run as a daemon):
+  set daemon 120            # check services at 2-minute intervals
+  set logfile /var/log/monit.log
+  set idfile /var/lib/monit/id
+  set statefile /var/lib/monit/state
+  set mailserver localhost port 25
+  set eventqueue
+      basedir /var/lib/monit/events # set the base directory where events will be stored
+      slots 100                     # optionally limit the queue size
+  set mail-format {
+      from: monit@$HOST
+      subject: monit alert --  $EVENT $SERVICE
+      message: $EVENT Service $SERVICE
+                 Date:        $DATE
+                 Action:      $ACTION
+                 Host:        $HOST
+                 Description: $DESCRIPTION
+
+            Message was sent from Monit Monitoring Service
+ }
+#                                                # timeout alert
+    set httpd port {{ monit_port }} and
+    allow {{ monit_user }}:{{ monit_password }}
+###############################################################################
+## Services
+###############################################################################
+  check system {{ hostname }}
+    if loadavg (1min) > 4 then alert
+    if loadavg (5min) > 2 then alert
+    if memory usage > 75% then alert
+    if swap usage > 25% then alert
+    if cpu usage (user) > 90% then alert
+    if cpu usage (system) > 40% then alert
+    if cpu usage (wait) > 30% then alert
+
+
+  check filesystem rootfs with path /
+    if space usage > 85% then alert
+
+##############################################################################
+## Apache 2
+#############################################################################
+  check process apache2 with pidfile /run/apache2.pid
+    start program = "/etc/init.d/apache2 start" with timeout 60 seconds
+    stop program  = "/etc/init.d/apache2 stop"
+##############################################################################
+## MySQL
+#############################################################################
+  check process mysqld with pidfile /var/run/mysqld/mysqld.pid
+    start program = "/etc/init.d/mysql start"
+    stop program = "/etc/init.d/mysql stop"
+##############################################################################
+## SSHd
+#############################################################################
+  check process sshd with pidfile /run/sshd.pid
+    start program "/etc/init.d/ssh start"
+    stop program "/etc/init.d/ssh stop"
+    if failed host 127.0.0.1 port 22 protocol ssh then restart
+    if 5 restarts within 5 cycles then timeout
+
+##############################################################################
+## Redis
+#############################################################################
+  check process redis-server with pidfile /var/run/redis/redis.pid
+    start program = "/usr/local/bin/redis-server /etc/redis/redis.conf"
+    stop program = "/usr/local/bin/redis-cli shutdown"
+
+##############################################################################
+## Sphinx
+#############################################################################
+  check process searchd with pidfile /var/log/searchd.pid
+    start program = "/usr/local/bin/searchd --config /usr/local/etc/sphinx.conf"
+    stop program = "/usr/local/bin/searchd --stop"
+##############################################################################
+## NTPd
+#############################################################################
+  check process ntpd with pidfile /run/ntpd.pid
+    start program = "/etc/init.d/ntp start"
+    stop program = "/etc/init.d/ntp stop"
+##############################################################################
+## CRON
+#############################################################################
+  check process crond with pidfile /run/crond.pid
+    start program = "/etc/init.d/cron start"
+    stop program = "/etc/init.d/cron stop"
+###############################################################################
+## Includes
+###############################################################################
+   include /etc/monit/conf.d/*

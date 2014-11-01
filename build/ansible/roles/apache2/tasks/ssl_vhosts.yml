@@ -1,0 +1,17 @@
+- name: make sure ssl certs directory exists
+  shell: creates={{path_to_ssl_certs}} mkdir {{path_to_ssl_certs}} -p
+
+- name: copy certs to remote host
+  copy: src={{ item }} dest={{ path_to_ssl_certs }}
+  with_items: ssl_certs_locations
+
+- name: set correct permissions to certs
+  shell: chmod 600 {{path_to_ssl_certs}} -Rf
+
+- name: add Apache virtualhost configuration
+  template: src=ssl_virtualhost.j2 dest="/etc/apache2/sites-available/ssl_{{ item.name }}.conf" mode=0644
+  with_items: ssl_apache_vhosts
+
+- name: enable Apache virtualhost
+  shell: ln -s /etc/apache2/sites-available/ssl_{{ item.name }}.conf /etc/apache2/sites-enabled/ creates="/etc/apache2/sites-enabled/ssl_{{ item.name }}.conf"
+  with_items: ssl_apache_vhosts

@@ -1,0 +1,29 @@
+<VirtualHost *:80>
+	ServerName {{ item.name }}
+    RewriteEngine on
+    RewriteCond %{HTTP_HOST} ^{{ item.name }}
+    RewriteRule ^/(.*)$ https://{{ item.name }}/$1 [L,R=301]
+</VirtualHost>
+<VirtualHost *:443>
+	SSLEngine On
+	ServerSignature On
+	SSLCertificateFile    {{path_to_ssl_certs}}{{ssl_certificate_file}}
+    SSLCertificateKeyFile {{path_to_ssl_certs}}{{ssl_certificate_key_file}}
+    SSLCertificateChainFile {{path_to_ssl_certs}}{{ssl_certificate_chain_file}}
+	ServerName {{ item.name }}
+	ServerAdmin {{ item.email|default('admin@localhost')}}
+	DocumentRoot {{ item.rootFolder }}
+	<Directory />
+		Options -Indexes +FollowSymLinks
+		AllowOverride All
+	</Directory>
+	<Directory {{ item.rootFolder }}>
+		Options -Indexes +FollowSymLinks +MultiViews
+		AllowOverride All
+		Order allow,deny
+		allow from all
+	</Directory>
+	ErrorLog ${APACHE_LOG_DIR}/{{ item.name }}-error.log
+	LogLevel error
+	CustomLog ${APACHE_LOG_DIR}/{{ item.name }}-access.log combined
+</VirtualHost>

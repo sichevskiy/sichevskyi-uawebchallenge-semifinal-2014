@@ -1,0 +1,25 @@
+- name: install xdebug
+  apt: pkg=php5-xdebug state=present
+
+- name: find xdebug.so
+  shell: find /usr/lib -name xdebug.so | head -n 1
+  register: xdebug_module_path
+
+- shell: ls /etc/php5/fpm/
+  register: php5_fpm_dir_exists
+  ignore_errors: yes
+
+- shell: ls /etc/php5/apache2/
+  register: php5_apache2_dir_exists
+  ignore_errors: yes
+
+- name: activate xdebug
+  template: src=xdebug.ini.j2 dest=/etc/php5/conf.d/xdebug.ini mode=0644
+
+- name: restart apache
+  service: name=apache2 state=restarted
+  when: php5_apache2_dir_exists.rc == 0
+
+- name: restart php5-fpm
+  service: name=php5-fpm state=restarted
+  when: php5_fpm_dir_exists.rc == 0

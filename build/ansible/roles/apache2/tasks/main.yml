@@ -1,0 +1,68 @@
+- name: ensure the Apache installed
+  apt: pkg=apache2 state=latest
+  tags: apache
+
+- name: ensure required modules installed
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - libapache2-mod-php5
+    - libapache2-mod-xsendfile
+  tags: apache
+
+- name: enable Apache modules
+  shell: a2enmod {{ item }}
+  with_items:
+    - ssl
+    - rewrite
+    - xsendfile
+  tags: apache
+
+- name: set APACHE_RUN_USER and APACHE_RUN_GROUP
+  lineinfile: dest=/etc/apache2/envvars regexp="^export {{ item.param }}=" line="export {{ item.param }}={{ item.value }}"
+  with_items :
+    - { param: APACHE_RUN_USER, value: "{{ apache_run_user }}" }
+    - { param: APACHE_RUN_GROUP, value: "{{ apache_run_group }}" }
+  tags: apache
+
+- name: copy servername file for Apache
+  template: src=disable_sendfile.j2 dest=/etc/apache2/conf.d/disable_sendfile owner=root mode=0644
+  tags: apache
+
+- name: copy ports file for Apache
+  template: src=ports.conf.j2 dest=/etc/apache2/ports.conf owner=root mode=0644
+  tags: apache
+
+- name: remove old virtual hosts
+  shell: rm /etc/apache2/sites-available/* -Rf && rm /etc/apache2/sites-enabled/* -Rf
+  tags: apache
+
+- name: change default Apache virtualhost configuration
+  template: src=default_virtualhost.j2 dest="/etc/apache2/sites-available/default.conf"
+  tags: apache
+
+- name: enable Apache default host
+  command: creates=/etc/apache2/sites-enabled/000-default.conf ln -s /etc/apache2/sites-available/default.conf /etc/apache2/sites-enabled/000-default.conf
+  tags: apache
+
+- name: set Apache virtualhosts
+  include: vhosts.yml
+  tags: apache
+
+- name: set Apache SSL virtualhosts
+  include: ssl_vhosts.yml
+  tags: apache
+
+- name: add phpmyadmin virtualhost configuration
+  template: src=phpmyadmin_virtualhost.j2 dest="/etc/apache2/sites-available/{{ phpmyadmin_name }}.conf"
+
+- name: enable phpmyadmin virtualhost
+  command: ln -s /etc/apache2/sites-available/{{ phpmyadmin_name }}.conf /etc/apache2/sites-enabled/ creates="/etc/apache2/sites-enabled/{{ phpmyadmin_name }}.conf"
+
+- name: remove default index.html from /var/www
+  file: path=/var/www/index.html state=absent
+  tags: apache
+
+- name: make sure the Apache started
+  service: name=apache2 state=restarted enabled=yes
+  notify: restart apache
+  tags: apache

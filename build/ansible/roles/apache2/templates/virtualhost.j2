@@ -1,0 +1,16 @@
+<VirtualHost *:80>
+  ServerName {{ item.name }}
+  ServerAdmin {{ item.email|default('admin@localhost')}}
+
+  DocumentRoot {{ item.rootFolder }}
+  <Directory {{ item.rootFolder }}>
+    Options -Indexes +FollowSymLinks +MultiViews
+    AllowOverride All
+    Order allow,deny
+    allow from all
+  </Directory>
+
+  LogLevel error
+  CustomLog ${APACHE_LOG_DIR}/{{ item.name }}-access.log combined
+  ErrorLog ${APACHE_LOG_DIR}/{{ item.name }}-error.log
+</VirtualHost>
